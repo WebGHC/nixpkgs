@@ -2,6 +2,7 @@
 , ignoreCollisions ? false, withLLVM ? false
 , postBuild ? ""
 , haskellPackages
+, buildPlatform, hostPlatform
 }:
 
 # This wrapper works only with GHC 6.12 or later.
@@ -33,7 +34,7 @@ let
   ghc761OrLater = isGhcjs || lib.versionOlder "7.6.1" ghc.version;
   packageDBFlag = if ghc761OrLater then "--global-package-db" else "--global-conf";
   ghcCommand'    = if isGhcjs then "ghcjs" else "ghc";
-  crossPrefix = if (ghc.cross or null) != null then "${ghc.cross.config}-" else "";
+  crossPrefix = if buildPlatform != hostPlatform then "${hostPlatform.config}-" else "";
   ghcCommand = "${crossPrefix}${ghcCommand'}";
   ghcCommandCaps= lib.toUpper ghcCommand';
   libDir        = "$out/lib/${ghcCommand}-${ghc.version}";
