@@ -176,6 +176,7 @@ stdenv.mkDerivation ({
   inherit src;
 
   nativeBuildInputs = otherBuildInputs ++ optionals (!hasActiveLibrary) propagatedBuildInputs;
+  buildInputs = ghc.propForeignDeps or [];
   propagatedNativeBuildInputs = optionals hasActiveLibrary propagatedBuildInputs;
 
   LANG = "en_US.UTF-8";         # GHC needs the locale configured during the Haddock phase.

@@ -145,6 +145,12 @@ in stdenv.mkDerivation (rec {
     inherit bootPkgs;
 
     inherit llvmPackages;
+
+    propForeignDeps = stdenv.lib.optionals (buildPlatform != targetPlatform) [
+      __targetPackages.ncurses.out
+      __targetPackages.gmp.out
+      __targetPackages.libffi.out
+    ];
   };
 
   meta = {
