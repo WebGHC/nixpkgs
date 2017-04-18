@@ -3,8 +3,12 @@
 , abiVersion
 , mouseSupport ? false
 , unicode ? true
+, androidMinimal ? false
 
 , gpm
+
+, buildPlatform, hostPlatform
+, buildPackages
 }:
 let
   version = if abiVersion == "5" then "5.9" else "6.0";
@@ -12,7 +16,7 @@ let
     then "0fsn7xis81za62afan0vvm38bvgzg5wfmv1m86flqcj0nj7jjilh"
     else "0q3jck7lna77z5r42f13c4xglc7azd19pxfrjrpgp2yf615w4lgm";
 in
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (rec {
   name = "ncurses-${version}";
 
   src = fetchurl {
@@ -30,12 +34,27 @@ stdenv.mkDerivation rec {
     "--without-debug"
     "--enable-pc-files"
     "--enable-symlinks"
-  ] ++ lib.optional unicode "--enable-widec";
+  ] ++ lib.optional unicode "--enable-widec"
+  ++ lib.optionals androidMinimal [
+    "--without-cxx"
+    #"--host=arm"
+    "--enable-static"
+    #"--disable-shared"
+    #"--without-manpages"
+    #"--without-debug"
+    #"--without-termlib"
+    #"--without-ticlib"
+    "--without-cxx"
+  ];
 
   # Only the C compiler, and explicitly not C++ compiler needs this flag on solaris:
   CFLAGS = lib.optionalString stdenv.isSunOS "-D_XOPEN_SOURCE_EXTENDED";
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [
+    pkgconfig
+  ] ++ lib.optionals (buildPlatform != hostPlatform) [
+    buildPackages.ncurses buildPackages.stdenv.cc
+  ];
   buildInputs = lib.optional (mouseSupport && stdenv.isLinux) gpm;
 
   preConfigure = ''
@@ -58,7 +77,8 @@ stdenv.mkDerivation rec {
     sed -i -e 's,LIB_SUFFIX="t,LIB_SUFFIX=",' configure
   '';
 
-  selfNativeBuildInput = true;
+  # Here only for native hash, remove on next mass rebuild
+  selfNativeBuildInput = buildPlatform == hostPlatform;
 
   enableParallelBuilding = true;
 
@@ -149,4 +169,6 @@ stdenv.mkDerivation rec {
     ldflags = "-lncurses";
     inherit unicode abiVersion;
   };
-}
+} // stdenv.lib.optionalAttrs (stdenv.isDarwin && buildPlatform != hostPlatform) {
+  dontSetConfigureCross = true;
+})

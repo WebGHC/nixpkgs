@@ -56,12 +56,23 @@ rec {
 
   # Return a modified stdenv that adds a cross compiler to the
   # builds.
-  makeStdenvCross = stdenv: cross: binutilsCross: gccCross: stdenv // {
+  makeStdenvCross = stdenvOrig: cross: cc: let
+    stdenv = stdenvOrig.override {
+      inherit cc;
 
+      allowedRequisites = null;
+
+      # Overrides are surely not valid as packages built with this run on a
+      # different platform.
+      overrides = _: _: {};
+    };
+  in stdenv // {
     mkDerivation =
       { name ? "", buildInputs ? [], nativeBuildInputs ? []
       , propagatedBuildInputs ? [], propagatedNativeBuildInputs ? []
-      , selfNativeBuildInput ? false, ...
+      , configureFlags ? [], dontSetConfigureCross ? false
+      , selfNativeBuildInput ? false
+      , ...
       } @ args:
 
       let
@@ -87,13 +98,15 @@ rec {
           name = name + "-" + cross.config;
           nativeBuildInputs = nativeBuildInputs
             ++ nativeInputsFromBuildInputs
-            ++ [ gccCross binutilsCross ]
             ++ stdenv.lib.optional selfNativeBuildInput nativeDrv
               # without proper `file` command, libtool sometimes fails
               # to recognize 64-bit DLLs
             ++ stdenv.lib.optional (cross.config  == "x86_64-w64-mingw32") pkgs.file
             ++ stdenv.lib.optional (cross.config  == "aarch64-linux-gnu") pkgs.updateAutotoolsGnuConfigScriptsHook
             ;
+
+          configureFlags = configureFlags ++
+            stdenv.lib.optional (!dontSetConfigureCross) "--host=${cross.config}";
 
           # Cross-linking dynamic libraries, every buildInput should
           # be propagated because ld needs the -rpath-link to find
@@ -105,10 +118,6 @@ rec {
 
           crossConfig = cross.config;
         } // args.crossAttrs or {});
-
-    inherit gccCross binutilsCross;
-    ccCross = gccCross;
-
   };
 
 

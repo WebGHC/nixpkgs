@@ -20,7 +20,6 @@
 , enableMultilib ? false
 , name ? "gcc"
 , cross ? null
-, binutilsCross ? null
 , libcCross ? null
 , crossStageStatic ? true
 , gnat ? null
@@ -78,6 +77,9 @@ let version = "4.5.4";
       withArch +
       withCpu +
       withAbi +
+      # Ensure that -print-prog-name is able to find the correct programs.
+      " --with-as=${binutils}/bin/${cross.config}-as" +
+      " --with-ld=${binutils}/bin/${cross.config}-ld" +
       (if crossMingw && crossStageStatic then
         " --with-headers=${libcCross}/include" +
         " --with-gcc" +
@@ -224,7 +226,7 @@ stdenv.mkDerivation ({
     ++ (optional langJava boehmgc)
     ++ (optionals langJava [zip unzip])
     ++ (optionals javaAwtGtk ([gtk2 pkgconfig libart_lgpl] ++ xlibs))
-    ++ (optionals (cross != null) [binutilsCross])
+    ++ (optionals (cross != null) [binutils])
     ++ (optionals langAda [gnatboot])
     ++ (optionals langVhdl [gnat])
     ;

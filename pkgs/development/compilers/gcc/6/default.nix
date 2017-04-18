@@ -26,7 +26,6 @@
 , enablePlugin ? true             # whether to support user-supplied plug-ins
 , name ? "gcc"
 , cross ? null
-, binutilsCross ? null
 , libcCross ? null
 , crossStageStatic ? true
 , gnat ? null
@@ -145,6 +144,9 @@ let version = "6.3.0";
         withFpu +
         withFloat +
         withMode +
+        # Ensure that -print-prog-name is able to find the correct programs.
+        " --with-as=${binutils}/bin/${cross.config}-as" +
+        " --with-ld=${binutils}/bin/${cross.config}-ld" +
         (if crossMingw && crossStageStatic then
           " --with-headers=${libcCross}/include" +
           " --with-gcc" +
@@ -169,11 +171,6 @@ let version = "6.3.0";
           else
           (if crossDarwin then " --with-sysroot=${getLib libcCross}/share/sysroot"
            else                " --with-headers=${getDev libcCross}/include") +
-          # Ensure that -print-prog-name is able to find the correct programs.
-          (stdenv.lib.optionalString (crossMingw || crossDarwin) (
-            " --with-as=${binutilsCross}/bin/${cross.config}-as" +
-            " --with-ld=${binutilsCross}/bin/${cross.config}-ld"
-          )) +
           " --enable-__cxa_atexit" +
           " --enable-long-long" +
           (if crossMingw then
@@ -296,7 +293,7 @@ stdenv.mkDerivation ({
     ++ (optional (zlib != null) zlib)
     ++ (optionals langJava [ boehmgc zip unzip ])
     ++ (optionals javaAwtGtk ([ gtk2 libart_lgpl ] ++ xlibs))
-    ++ (optionals (cross != null) [binutilsCross])
+    ++ (optionals (cross != null) [binutils])
     ++ (optionals langAda [gnatboot])
     ++ (optionals langVhdl [gnat])
 

@@ -1,13 +1,20 @@
-{ stdenv, fetchurl, ghc, pkgconfig, glibcLocales, coreutils, gnugrep, gnused
+{ stdenv, buildPackages, ghc
 , jailbreak-cabal, hscolour, cpphs, nodejs
-}: let isCross = (ghc.cross or null) != null; in
+, buildPlatform, hostPlatform
+, libiconv
+}:
+
+let
+  isCross = buildPlatform != hostPlatform;
+  inherit (buildPackages) fetchurl pkgconfig binutils coreutils gnugrep gnused glibcLocales;
+in
 
 { pname
 , dontStrip ? (ghc.isGhcjs or false)
 , version, revision ? null
 , sha256 ? null
 , src ? fetchurl { url = "mirror://hackage/${pname}-${version}.tar.gz"; inherit sha256; }
-, buildDepends ? [], setupHaskellDepends ? [], libraryHaskellDepends ? [], executableHaskellDepends ? []
+, buildDepends ? [], setupHaskellDepends ? stdenv.lib.optionals isCross [ ghc.bootPkgs.Cabal ], libraryHaskellDepends ? [], executableHaskellDepends ? []
 , buildTarget ? ""
 , buildTools ? [], libraryToolDepends ? [], executableToolDepends ? [], testToolDepends ? [], benchmarkToolDepends ? []
 , configureFlags ? []
@@ -19,8 +26,8 @@
 , enableLibraryProfiling ? false
 , enableExecutableProfiling ? false
 # TODO enable shared libs for cross-compiling
-, enableSharedExecutables ? !isCross && (((ghc.isGhcjs or false) || stdenv.lib.versionOlder "7.7" ghc.version))
-, enableSharedLibraries ? !isCross && (((ghc.isGhcjs or false) || stdenv.lib.versionOlder "7.7" ghc.version))
+, enableSharedExecutables ? ((ghc.isGhcjs or false) || stdenv.lib.versionOlder "7.7" ghc.version)
+, enableSharedLibraries ? ((ghc.isGhcjs or false) || stdenv.lib.versionOlder "7.7" ghc.version)
 , enableSplitObjs ? null # OBSOLETE, use enableDeadCodeElimination
 , enableDeadCodeElimination ? (!stdenv.isDarwin)  # TODO: use -dead_strip  for darwin
 , enableStaticLibraries ? true
@@ -96,11 +103,13 @@ let
   enableParallelBuilding = (versionOlder "7.8" ghc.version && !hasActiveLibrary) || versionOlder "8.0.1" ghc.version;
 
   crossCabalFlags = [
-    "--with-ghc=${ghc.cross.config}-ghc"
-    "--with-ghc-pkg=${ghc.cross.config}-ghc-pkg"
-    "--with-gcc=${ghc.cc}"
-    "--with-ld=${ghc.ld}"
+    "--with-ghc=${crossPrefix}ghc"
+    "--with-ghc-pkg=${crossPrefix}ghc-pkg"
+    "--with-gcc=${crossPrefix}cc"
+    "--with-ld=${crossPrefix}ld"
+    "--hsc2hs-options=--cross-compile"
     "--with-hsc2hs=${nativeGhc}/bin/hsc2hs"
+    "--with-strip=${binutils}/bin/${crossPrefix}strip"
   ] ++ (if isHaLVM then [] else ["--hsc2hs-options=--cross-compile"]);
 
   crossCabalFlagsString =
@@ -127,7 +136,7 @@ let
   ] ++ optionals isGhcjs [
     "--ghcjs"
   ] ++ optionals isCross ([
-    "--configure-option=--host=${ghc.cross.config}"
+    "--configure-option=--host=${hostPlatform.config}"
   ] ++ crossCabalFlags);
 
   setupCompileFlags = [
@@ -151,7 +160,10 @@ let
                      optionals doCheck (testDepends ++ testHaskellDepends ++ testSystemDepends ++ testToolDepends) ++
                      # ghcjs's hsc2hs calls out to the native hsc2hs
                      optional isGhcjs nativeGhc ++
-                     optionals withBenchmarkDepends (benchmarkDepends ++ benchmarkHaskellDepends ++ benchmarkSystemDepends ++ benchmarkToolDepends);
+                     optionals withBenchmarkDepends (benchmarkDepends ++ benchmarkHaskellDepends ++ benchmarkSystemDepends ++ benchmarkToolDepends) ++
+                     optional (hostPlatform.useAndroidPrebuilt or false) [
+                       libiconv
+                     ];
   allBuildInputs = propagatedBuildInputs ++ otherBuildInputs;
 
   haskellBuildInputs = stdenv.lib.filter isHaskellPkg allBuildInputs;
@@ -162,7 +174,7 @@ let
   setupBuilder = if isCross then "${nativeGhc}/bin/ghc" else ghcCommand;
   setupCommand = "./Setup";
   ghcCommand' = if isGhcjs then "ghcjs" else "ghc";
-  crossPrefix = if (ghc.cross or null) != null then "${ghc.cross.config}-" else "";
+  crossPrefix = if isCross then "${hostPlatform.config}-" else "";
   ghcCommand = "${crossPrefix}${ghcCommand'}";
   ghcCommandCaps= toUpper ghcCommand';
 
@@ -206,7 +218,11 @@ stdenv.mkDerivation ({
     ${optionalString (hasActiveLibrary && hyperlinkSource) "export PATH=${hscolour}/bin:$PATH"}
 
     packageConfDir="$TMPDIR/package.conf.d"
-    mkdir -p $packageConfDir
+    mkdir -p $packageConfDir${optionalString (isCross && setupHaskellDepends != []) ''
+
+      setupPackageConfDir="$TMPDIR/setup-package.conf.d"
+      mkdir -p $setupPackageConfDir
+    ''}
 
     setupCompileFlags="${concatStringsSep " " setupCompileFlags}"
     configureFlags="${concatStringsSep " " defaultConfigureFlags} $configureFlags"
@@ -227,7 +243,22 @@ stdenv.mkDerivation ({
         configureFlags+=" --extra-lib-dirs=$p/lib"
       fi
     done
-    ${ghcCommand}-pkg --${packageDbFlag}="$packageConfDir" recache
+    ${optionalString (isCross && setupHaskellDepends != []) ''
+
+      for p in $inputClosure; do
+        if [ -d "$p/lib/${nativeGhc.name}/package.conf.d" ]; then
+          cp -f "$p/lib/${nativeGhc.name}/package.conf.d/"*.conf $setupPackageConfDir/
+          continue
+        fi
+        if [ -d "$p/include" ]; then
+          setupConfigureFlags+=" --extra-include-dirs=$p/include"
+        fi
+        if [ -d "$p/lib" ]; then
+          setupConfigureFlags+=" --extra-lib-dirs=$p/lib"
+        fi
+      done
+      ${setupBuilder}-pkg --${packageDbFlag}="$setupPackageConfDir" recache
+    ''}${ghcCommand}-pkg --${packageDbFlag}="$packageConfDir" recache
 
     runHook postSetupCompilerEnvironment
   '';
@@ -240,7 +271,10 @@ stdenv.mkDerivation ({
     done
 
     echo setupCompileFlags: $setupCompileFlags
-    ${setupBuilder} $setupCompileFlags --make -o Setup -odir $TMPDIR -hidir $TMPDIR $i
+    ${optionalString
+      (isCross && setupHaskellDepends != [])
+      ''GHC_PACKAGE_PATH="$setupPackageConfDir:" ''
+    }${setupBuilder} $setupCompileFlags --make -o Setup -odir $TMPDIR -hidir $TMPDIR $i
 
     runHook postCompileBuildDriver
   '';
@@ -368,4 +402,5 @@ stdenv.mkDerivation ({
 // optionalAttrs (dontStrip)            { inherit dontStrip; }
 // optionalAttrs (hardeningDisable != []) { inherit hardeningDisable; }
 // optionalAttrs (stdenv.isLinux)       { LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive"; }
+// optionalAttrs (isCross)              { dontSetConfigureCross = true; }
 )

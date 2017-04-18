@@ -21,9 +21,7 @@ in bootStages ++ [
     selfBuild = false;
     # It's OK to change the built-time dependencies
     allowCustomOverrides = true;
-    stdenv = vanillaPackages.stdenv // {
-      overrides = _: _: {};
-    };
+    inherit (vanillaPackages) stdenv;
   })
 
   # Run Packages
@@ -33,19 +31,12 @@ in bootStages ++ [
     targetPlatform = crossSystem;
     inherit config overlays;
     selfBuild = false;
-    stdenv = if crossSystem.useiOSCross or false
-      then let
-          inherit (buildPackages.darwin.ios-cross {
-              prefix = crossSystem.config;
-              inherit (crossSystem) arch;
-              simulator = crossSystem.isiPhoneSimulator or false; })
-            cc binutils;
-        in buildPackages.makeStdenvCross
-          buildPackages.stdenv crossSystem
-          binutils cc
-      else buildPackages.makeStdenvCross
-        buildPackages.stdenv crossSystem
-        buildPackages.binutilsCross buildPackages.gccCrossStageFinal;
+    stdenv = buildPackages.makeStdenvCross
+      buildPackages.stdenv
+      crossSystem
+      (if crossSystem.useiOSCross or false
+       then buildPackages.darwin.ios-cross
+       else buildPackages.gccCrossStageFinal);
   })
 
 ]
