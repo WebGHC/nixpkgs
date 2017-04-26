@@ -124,11 +124,11 @@ rec {
 
   build =
 
-    pkgs.buildPackages.stdenv.mkDerivation {
+    pkgs.stdenv.mkDerivation {
       name = "stdenv-bootstrap-tools-cross";
       crossConfig = pkgs.hostPlatform.config;
 
-      buildInputs = [
+      nativeBuildInputs = [
         pkgs.buildPackages.nukeReferences
         pkgs.buildPackages.cpio
         pkgs.buildPackages.binutils
@@ -263,7 +263,7 @@ rec {
       allowedReferences = [];
     };
 
-  dist = pkgs.buildPackages.stdenv.mkDerivation {
+  dist = pkgs.stdenv.mkDerivation {
     name = "stdenv-bootstrap-tools-cross";
 
     buildCommand = ''
