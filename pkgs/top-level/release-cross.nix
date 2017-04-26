@@ -44,6 +44,13 @@ let
     windows.wxMSW = nativePlatforms;
   };
 
+  darwinCommon = {
+    buildPackages.binutils = darwin;
+    gmp = darwin;
+    libiconv = darwin;
+    libffi = darwin;
+    ncurses = darwin;
+  };
 in
 
 {
@@ -92,9 +99,7 @@ in
       arch = "arm64";
       libc = "libSystem";
     };
-  in mapTestOnCross crossSystem {
-    buildPackages.binutils = darwin;
-  };
+  in mapTestOnCross crossSystem darwinCommon;
 
   darwinToArm = let
     crossSystem = {
@@ -102,9 +107,7 @@ in
       arch = "armv7-a";
       libc = "libSystem";
     };
-  in mapTestOnCross crossSystem {
-    buildPackages.binutils = darwin;
-  };
+  in mapTestOnCross crossSystem darwinCommon;
 
   /* Test some cross builds to the Sheevaplug */
   crossSheevaplugLinux = let
