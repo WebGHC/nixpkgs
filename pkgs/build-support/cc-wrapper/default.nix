@@ -345,7 +345,7 @@ stdenv.mkDerivation {
        if targetPlatform.system == "aarch64-linux"  then "ld-linux-aarch64.so.1" else
        if targetPlatform.system == "powerpc-linux"  then "ld.so.1" else
        if targetPlatform.system == "mips64el-linux" then "ld.so.1" else
-       if targetPlatform.system == "x86_64-darwin"  then "/usr/lib/dyld" else
+       if targetPlatform.isDarwin                   then "/usr/lib/dyld" else
        if stdenv.lib.hasSuffix "pc-gnu" targetPlatform.config then "ld.so.1" else
        abort "Don't know the name of the dynamic linker for this platform.")
     else "";
