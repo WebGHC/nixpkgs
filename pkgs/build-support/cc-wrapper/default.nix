@@ -144,7 +144,7 @@ stdenv.mkDerivation {
       }
     ''
 
-    + optionalString (libc != null) (if (!targetPlatform.isDarwin) then ''
+    + optionalString (libc != null) (if (!(targetPlatform.isDarwin || targetPlatform.libc == "bionic")) then ''
       dynamicLinker="${libc_lib}/lib/$dynamicLinker"
       echo $dynamicLinker > $out/nix-support/dynamic-linker
 
@@ -346,6 +346,7 @@ stdenv.mkDerivation {
        if targetPlatform.system == "powerpc-linux"  then "ld.so.1" else
        if targetPlatform.system == "mips64el-linux" then "ld.so.1" else
        if targetPlatform.isDarwin                   then "/usr/lib/dyld" else
+       if targetPlatform.libc == "bionic"           then "/system/bin/linker" else
        if stdenv.lib.hasSuffix "pc-gnu" targetPlatform.config then "ld.so.1" else
        abort "Don't know the name of the dynamic linker for this platform.")
     else "";
