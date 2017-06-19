@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, binutils ? null, gccCross ? null
+{ stdenv, fetchurl
 , onlyHeaders ? false
 , onlyPthreads ? false
 }:
@@ -27,10 +27,6 @@ stdenv.mkDerivation ({
     cd mingw-w64-libraries/winpthreads
   '';
 } else {
-  buildInputs = [ gccCross binutils ];
-
-  crossConfig = gccCross.crossConfig;
-
   dontStrip = true;
 })
 )

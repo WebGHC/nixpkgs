@@ -5169,6 +5169,14 @@ with pkgs;
 
   gccApple = throw "gccApple is no longer supported";
 
+  # Can't just overrideCC, because then the stdenv-cross mkDerivation will be
+  # thrown away. TODO: find a better solution for this.
+  crossLibcStdenv = buildPackages.makeStdenvCross {
+    inherit (buildPackages.buildPackages) stdenv;
+    inherit buildPlatform hostPlatform targetPlatform;
+    cc = buildPackages.gccCrossStageStatic;
+  };
+
   gccCrossStageStatic = assert targetPlatform != buildPlatform; let
     libcCross1 =
       if targetPlatform.libc == "msvcrt" then windows.mingw_w64_headers
@@ -7805,13 +7813,7 @@ with pkgs;
   # Being redundant to avoid cycles on boot. TODO: find a better way
   glibcCross = callPackage ../development/libraries/glibc {
     installLocales = config.glibc.locales or false;
-    # Can't just overrideCC, because then the stdenv-cross mkDerivation will be
-    # thrown away. TODO: find a better solution for this.
-    stdenv = buildPackages.makeStdenvCross {
-      inherit (buildPackages.buildPackages) stdenv;
-      inherit buildPlatform hostPlatform targetPlatform;
-      cc = buildPackages.gccCrossStageStatic;
-    };
+    stdenv = crossLibcStdenv;
   };
 
   # We can choose:
@@ -7821,8 +7823,8 @@ with pkgs;
     /**/ if name == "glibc" then __targetPackages.glibcCross or glibcCross
     else if name == "bionic" then __targetPackages.bionic
     else if name == "uclibc" then uclibcCross
-    else if name == "msvcrt" then windows.mingw_w64
-    else if name == "libSystem" then __targetPackages.darwin.Libsystem or darwin.Libsystem
+    else if name == "msvcrt" then __targetPackages.windows.mingw_w64 or windows.mingw_w64
+    else if name == "libSystem" then darwin.xcode
     else throw "Unknown libc";
 
   libcCross = assert targetPlatform != buildPlatform; libcCrossChooser targetPlatform.libc;
@@ -12579,8 +12581,7 @@ with pkgs;
     };
 
     mingw_w64 = callPackage ../os-specific/windows/mingw-w64 {
-      gccCross = gccCrossStageStatic;
-      binutils = binutils;
+      stdenv = crossLibcStdenv;
     };
 
     mingw_w64_headers = callPackage ../os-specific/windows/mingw-w64 {
