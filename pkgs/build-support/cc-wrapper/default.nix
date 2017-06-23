@@ -294,7 +294,7 @@ stdenv.mkDerivation {
 
       export real_cc=${prefix}cc
       export real_cxx=${prefix}c++
-      export default_cxx_stdlib_compile="${default_cxx_stdlib_compile}"
+      export default_cxx_stdlib_compile="${optionalString (hostPlatform == targetPlatform) default_cxx_stdlib_compile}"
 
       if [ -e $ccPath/${prefix}gcc ]; then
         wrap ${prefix}gcc ${preWrap ./cc-wrapper.sh} $ccPath/${prefix}gcc
