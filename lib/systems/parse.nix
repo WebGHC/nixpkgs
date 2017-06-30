@@ -100,6 +100,7 @@ rec {
     androideabi = {};
     gnueabi = {};
     gnueabihf = {};
+    wasm = {};
 
     unknown = {};
   };
