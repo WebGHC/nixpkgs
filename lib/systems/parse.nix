@@ -85,6 +85,7 @@ rec {
     openbsd = { execFormat = elf;     families = { inherit unix bsd; }; };
     solaris = { execFormat = elf;     families = { inherit unix; }; };
     windows = { execFormat = pe;      families = { }; };
+    unknown = { execFormat = unknown; families = { }; };
   } // { # aliases
     # TODO(@Ericson2314): Handle these Darwin version suffixes more generally.
     darwin10 = kernels.darwin;
