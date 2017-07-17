@@ -50,7 +50,7 @@ stdenv.mkDerivation rec {
     #"--without-debug"
     #"--without-termlib"
     #"--without-ticlib"
-    "--without-cxx"
+    "--without-shared"
   ];
 
   # Only the C compiler, and explicitly not C++ compiler needs this flag on solaris:
