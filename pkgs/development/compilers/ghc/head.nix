@@ -4,18 +4,7 @@
 , __targetPackages
 , buildPlatform, hostPlatform, targetPlatform
 
-, # LLVM is conceptually a run-time-only depedendency, but for
-  # non-x86, we need LLVM to bootstrap later stages, so it becomes a
-  # build-time dependency too.
-  #
-  # We generally want the latest llvm package set, which would normally be
-  # `llvmPackages` on most platforms. But on Darwin, the default is the version
-  # released with OSX, so we force 3.9, which is the correct version at this
-  # time.
-  #
-  # TODO: redundancy betweeen the configuration files and this in
-  # picking the appropriate LLVM version.
-  llvmPackages_39
+, llvmPackages
 
 , # If enabled, GHC will be build with the GPL-free but slower integer-simple
   # library instead of the faster but GPLed integer-gmp library.
@@ -38,8 +27,8 @@
 let
   inherit (bootPkgs) ghc;
 
-  version = "8.1.20170106";
-  rev = "b4f2afe70ddbd0576b4eba3f82ba1ddc52e9b3bd";
+  version = "8.3.20170720";
+  rev = "fefcbfa86b73517d5002366d0703ce694c6d228d";
 
   targetStdenv = __targetPackages.stdenv;
   prefix = stdenv.lib.optionalString
@@ -49,10 +38,6 @@ let
     (targetPlatform != hostPlatform)
     "${stdenv.lib.replaceStrings ["-"] ["_"] targetPlatform.config}_";
 
-  llvmPackages = llvmPackages_39;
-
-  prebuiltAndroidTarget = targetPlatform.useAndroidPrebuilt or false;
-
 in stdenv.mkDerivation (rec {
   inherit version rev;
   name = "${prefix}ghc-${version}";
@@ -60,7 +45,7 @@ in stdenv.mkDerivation (rec {
   src = fetchgit {
     url = "git://git.haskell.org/ghc.git";
     inherit rev;
-    sha256 = "1h064nikx5srsd7qvz19f6dxvnpfjp0b3b94xs1f4nar18hzf4j0";
+    sha256 = "11xhp5dl44qgvafiwiz4k7vi15k34lpy22s95n1zlscrg6yx6wkm";
   };
 
   postPatch = "patchShebangs .";
@@ -74,9 +59,9 @@ in stdenv.mkDerivation (rec {
   '' + stdenv.lib.optionalString enableRelocatedStaticLibs ''
     echo 'GhcLibHcOpts += -fPIC' >> mk/build.mk
     echo 'GhcRtsHcOpts += -fPIC' >> mk/build.mk
-  '' + stdenv.lib.optionalString prebuiltAndroidTarget ''
+  '' /* + stdenv.lib.optionalString prebuiltAndroidTarget ''
     echo 'EXTRA_CC_OPTS += -std=gnu99' >> mk/build.mk
-  '' + stdenv.lib.optionalString enableIntegerSimple ''
+  '' */ + stdenv.lib.optionalString enableIntegerSimple ''
     echo "INTEGER_LIBRARY = integer-simple" >> mk/build.mk
   '' + ''
     echo ${version} >VERSION
@@ -123,8 +108,8 @@ in stdenv.mkDerivation (rec {
     gmp.out __targetPackages.gmp.out
   ] ++ stdenv.lib.optionals (!useVendoredLibffi) [
     libffi.out __targetPackages.libffi.out
-  ] ++ stdenv.lib.optionals (prebuiltAndroidTarget || targetPlatform != hostPlatform && targetPlatform.libc == "libsystem") [
-    __targetPackages.libiconv
+  # ] ++ stdenv.lib.optionals (prebuiltAndroidTarget || targetPlatform != hostPlatform && targetPlatform.libc == "libsystem") [
+  #   __targetPackages.libiconv
   ];
 
   # Hack so that envHooks are run for build inputs and crossEnvHooks for host
@@ -197,37 +182,37 @@ in stdenv.mkDerivation (rec {
 
   # TODO: next mass rebuild / version bump just do
   # dontSetConfigureCross = buildPlatform != targetPlatform;
-} // stdenv.lib.optionalAttrs prebuiltAndroidTarget {
+# } // stdenv.lib.optionalAttrs prebuiltAndroidTarget {
 
-  # It gets confused with ncurses
-  dontPatchELF = true;
-  dontCrossPatchELF = true;
+#   # It gets confused with ncurses
+#   dontPatchELF = true;
+#   dontCrossPatchELF = true;
 
-  # It uses the native strip on libraries too
-  dontStrip = true;
-  dontCrossStrip = true;
+#   # It uses the native strip on libraries too
+#   dontStrip = true;
+#   dontCrossStrip = true;
 
-  # Hack so we can get away with not stripping and patching.
-  noAuditTmpdir = true;
+#   # Hack so we can get away with not stripping and patching.
+#   noAuditTmpdir = true;
 
-  patches = [
-    ./android-patches/add-llvm-target-data-layout.patch
-    #./android-patches/build-deps-extra-cc-opts.patch
-    ./android-patches/unix-posix_vdisable.patch
-    #./android-patches/unix-posix-files-imports.patch
-    ./android-patches/enable-fPIC.patch
-    ./android-patches/no-pthread-android.patch
-    ./android-patches/force_CC_SUPPORTS_TLS_equal_zero.patch
-    ./android-patches/undefine_MYTASK_USE_TLV_for_CC_SUPPORTS_TLS_zero.patch
-    ./android-patches/force-relocation-equal-pic.patch
-    ./android-patches/rts_android_log_write.patch
-    ./android-patches/patch_rts_elf.patch
+#   patches = [
+#     ./android-patches/add-llvm-target-data-layout.patch
+#     #./android-patches/build-deps-extra-cc-opts.patch
+#     ./android-patches/unix-posix_vdisable.patch
+#     #./android-patches/unix-posix-files-imports.patch
+#     ./android-patches/enable-fPIC.patch
+#     ./android-patches/no-pthread-android.patch
+#     ./android-patches/force_CC_SUPPORTS_TLS_equal_zero.patch
+#     ./android-patches/undefine_MYTASK_USE_TLV_for_CC_SUPPORTS_TLS_zero.patch
+#     ./android-patches/force-relocation-equal-pic.patch
+#     ./android-patches/rts_android_log_write.patch
+#     ./android-patches/patch_rts_elf.patch
 
-    ./android-patches/extra-modules-temp.patch
-    ./android-patches/pthread-die-temp.patch
-  ];
-} // stdenv.lib.optionalAttrs (buildPlatform != targetPlatform && targetPlatform.libc or "" == "libSystem") {
-  patches = [
-    ./android-patches/enable-fPIC.patch
-  ];
+#     ./android-patches/extra-modules-temp.patch
+#     ./android-patches/pthread-die-temp.patch
+#   ];
+# } // stdenv.lib.optionalAttrs (buildPlatform != targetPlatform && targetPlatform.libc or "" == "libSystem") {
+#   patches = [
+#     ./android-patches/enable-fPIC.patch
+#   ];
 })
