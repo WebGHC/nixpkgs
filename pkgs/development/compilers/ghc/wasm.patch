@@ -1,0 +1,77 @@
+diff --git a/aclocal.m4 b/aclocal.m4
+index 11606c7842..7f1e1336f2 100644
+--- a/aclocal.m4
++++ b/aclocal.m4
+@@ -215,7 +215,7 @@ AC_DEFUN([FPTOOLS_SET_HASKELL_PLATFORM_VARS],
+         mipsel)
+             test -z "[$]2" || eval "[$]2=ArchMipsel"
+             ;;
+-        hppa|hppa1_1|ia64|m68k|rs6000|s390|s390x|sh4|vax)
++        hppa|hppa1_1|ia64|m68k|rs6000|s390|s390x|sh4|vax|wasm32)
+             test -z "[$]2" || eval "[$]2=ArchUnknown"
+             ;;
+         *)
+@@ -273,7 +273,7 @@ AC_DEFUN([FPTOOLS_SET_HASKELL_PLATFORM_VARS],
+         nto-qnx)
+             test -z "[$]2" || eval "[$]2=OSQNXNTO"
+             ;;
+-        dragonfly|hpux|linuxaout|freebsd2|gnu|nextstep2|nextstep3|sunos4|ultrix)
++        dragonfly|hpux|linuxaout|freebsd2|gnu|nextstep2|nextstep3|sunos4|ultrix|unknown-wasm)
+             test -z "[$]2" || eval "[$]2=OSUnknown"
+             ;;
+         aix)
+@@ -1866,6 +1866,9 @@ case "$1" in
+   x86_64|amd64)
+     $2="x86_64"
+     ;;
++  wasm32)
++    $2="wasm32"
++    ;;
+   *)
+     echo "Unknown CPU $1"
+     exit 1
+@@ -1927,6 +1930,9 @@ AC_DEFUN([GHC_CONVERT_OS],[
+       nto-qnx*)
+         $3="nto-qnx"
+         ;;
++      unknown-wasm)
++        $3="unknown-wasm"
++        ;;
+       *)
+         echo "Unknown OS $1"
+         exit 1
+diff --git a/config.sub b/config.sub
+index 40ea5dfe11..a610598dd7 100755
+--- a/config.sub
++++ b/config.sub
+@@ -118,7 +118,7 @@ case $maybe_os in
+   linux-musl* | linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | \
+   knetbsd*-gnu* | netbsd*-gnu* | netbsd*-eabi* | \
+   kopensolaris*-gnu* | cloudabi*-eabi* | \
+-  storm-chaos* | os2-emx* | rtmk-nova*)
++  storm-chaos* | os2-emx* | rtmk-nova* | unknown-wasm)
+     os=-$maybe_os
+     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
+     ;;
+@@ -1551,6 +1551,8 @@ case $os in
+ 		;;
+ 	-ios)
+ 		;;
++	-unknown-wasm)
++		;;
+ 	-none)
+ 		;;
+ 	*)
+diff --git a/includes/ghc.mk b/includes/ghc.mk
+index d08ecfbc07..051aa28968 100644
+--- a/includes/ghc.mk
++++ b/includes/ghc.mk
+@@ -178,7 +178,7 @@ includes_GHCCONSTANTS_HASKELL_EXPORTS = includes/dist-derivedconstants/header/GH
+ INSTALL_LIBS += $(includes_GHCCONSTANTS_HASKELL_VALUE)
+ 
+ DERIVE_CONSTANTS_FLAGS += --gcc-program "$(CC)"
+-DERIVE_CONSTANTS_FLAGS += $(addprefix --gcc-flag$(space),$(includes_CC_OPTS) -fcommon)
++DERIVE_CONSTANTS_FLAGS += $(addprefix --gcc-flag$(space),$(includes_CC_OPTS))
+ DERIVE_CONSTANTS_FLAGS += --nm-program "$(NM)"
+ ifneq "$(OBJDUMP)" ""
+ DERIVE_CONSTANTS_FLAGS += --objdump-program "$(OBJDUMP)"

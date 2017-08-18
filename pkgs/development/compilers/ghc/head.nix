@@ -48,6 +48,9 @@ in stdenv.mkDerivation (rec {
     sha256 = "11xhp5dl44qgvafiwiz4k7vi15k34lpy22s95n1zlscrg6yx6wkm";
   };
 
+  ${if targetPlatform.arch or null == "wasm32" then "patches" else null} = [./wasm.patch];
+  ${if targetPlatform.arch or null == "wasm32" then "hardeningDisable" else null} = ["pic"];
+
   postPatch = "patchShebangs .";
 
   #v p dyn
