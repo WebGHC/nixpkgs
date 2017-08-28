@@ -34,8 +34,9 @@ stdenv.mkDerivation rec {
     "build"
   ];
 
-  configureFlags = [
+  configureFlags = lib.optionals (!androidMinimal) [
     "--with-shared"
+  ] ++ [
     "--without-debug"
     "--enable-pc-files"
     "--enable-symlinks"
