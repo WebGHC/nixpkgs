@@ -28,8 +28,9 @@ stdenv.mkDerivation rec {
   outputs = [ "out" "dev" "man" ];
   setOutputFlags = false; # some aren't supported
 
-  configureFlags = [
+  configureFlags = lib.optionals (!androidMinimal) [
     "--with-shared"
+  ] ++ [
     "--without-debug"
     "--enable-pc-files"
     "--enable-symlinks"
