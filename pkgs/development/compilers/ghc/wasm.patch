@@ -62,16 +62,3 @@ index 40ea5dfe11..a610598dd7 100755
  	-none)
  		;;
  	*)
-diff --git a/includes/ghc.mk b/includes/ghc.mk
-index d08ecfbc07..051aa28968 100644
---- a/includes/ghc.mk
-+++ b/includes/ghc.mk
-@@ -178,7 +178,7 @@ includes_GHCCONSTANTS_HASKELL_EXPORTS = includes/dist-derivedconstants/header/GH
- INSTALL_LIBS += $(includes_GHCCONSTANTS_HASKELL_VALUE)
- 
- DERIVE_CONSTANTS_FLAGS += --gcc-program "$(CC)"
--DERIVE_CONSTANTS_FLAGS += $(addprefix --gcc-flag$(space),$(includes_CC_OPTS) -fcommon)
-+DERIVE_CONSTANTS_FLAGS += $(addprefix --gcc-flag$(space),$(includes_CC_OPTS))
- DERIVE_CONSTANTS_FLAGS += --nm-program "$(NM)"
- ifneq "$(OBJDUMP)" ""
- DERIVE_CONSTANTS_FLAGS += --objdump-program "$(OBJDUMP)"
