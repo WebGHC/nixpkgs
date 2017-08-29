@@ -28,7 +28,7 @@ let
   inherit (bootPkgs) ghc;
 
   version = "8.3.20170720";
-  rev = "fefcbfa86b73517d5002366d0703ce694c6d228d";
+  rev = "df42a68c5d7ec00aa5e7c9366d484bd5424952cb";
 
   targetStdenv = __targetPackages.stdenv;
   prefix = stdenv.lib.optionalString
@@ -44,12 +44,10 @@ in stdenv.mkDerivation (rec {
 
   src = fetchgit {
     url = "git://git.haskell.org/ghc.git";
+    extraRemotes = ["https://github.com/WebGHC/ghc.git"];
     inherit rev;
-    sha256 = "11xhp5dl44qgvafiwiz4k7vi15k34lpy22s95n1zlscrg6yx6wkm";
+    sha256 = "0rwx8hlhjhnf1al01whwawlrib0l1kaim5mni8jgjq1cmypx4w1j";
   };
-
-  ${if targetPlatform.arch or null == "wasm32" then "patches" else null} = [./wasm.patch];
-  ${if targetPlatform.arch or null == "wasm32" then "hardeningDisable" else null} = ["pic"];
 
   postPatch = "patchShebangs .";
 
