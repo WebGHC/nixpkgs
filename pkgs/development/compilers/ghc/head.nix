@@ -22,6 +22,9 @@
     # On iOS, dynamic linking is not supported
     in !(stdenv.lib.strings.hasPrefix "aarch64-apple-darwin" triple)
     && !(stdenv.lib.strings.hasPrefix "arm-apple-darwin" triple)
+, # Whether to use a quick build for cross compiling. This is mostly
+  # just for debugging.
+  quick-cross ? false
 }:
 
 let
@@ -53,7 +56,7 @@ in stdenv.mkDerivation (rec {
 
   #v p dyn
   preConfigure = stdenv.lib.optionalString (targetPlatform != hostPlatform)''
-    sed 's|#BuildFlavour  = quick-cross|BuildFlavour  = perf-cross|' mk/build.mk.sample > mk/build.mk
+    sed 's|#BuildFlavour  = quick-cross|BuildFlavour  = ${if quick-cross then "quick" else "perf"}-cross|' mk/build.mk.sample > mk/build.mk
     echo 'Stage1Only = YES' >> mk/build.mk
   '' + stdenv.lib.optionalString (targetPlatform != hostPlatform && dynamic) ''
     echo 'DYNAMIC_GHC_PROGRAMS = YES' >> mk/build.mk

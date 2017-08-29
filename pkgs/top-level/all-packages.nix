@@ -5430,7 +5430,7 @@ with pkgs;
 
   # Haskell and GHC
 
-  haskell = callPackage ./haskell-packages.nix { };
+  haskell = callPackage ./haskell-packages.nix { buildTools = haskell; };
 
   haskellPackages = haskell.packages.ghc802.override {
     overrides = config.haskellPackageOverrides or (self: super: {});

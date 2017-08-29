@@ -1,5 +1,5 @@
 { pkgs, buildPackages, callPackage, stdenv
-, buildPlatform, targetPlatform
+, buildPlatform, targetPlatform, buildTools
 }:
 
 let # These are attributes in compiler and packages that don't support integer-simple.
@@ -18,7 +18,7 @@ let # These are attributes in compiler and packages that don't support integer-s
       "uhc"
       "integer-simple"
     ];
-in rec {
+in with buildTools; {
 
   lib = import ../development/haskell-modules/lib.nix { inherit pkgs; };
 
