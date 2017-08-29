@@ -99,6 +99,13 @@ init_remote(){
     local url=$1
     git init
     git remote add origin "$url"
+    if [ -z ${init_remote_once_token+x} ]; then
+        i=0
+        for extra in $extraRemotes; do
+            git remote add "extra$i" "$extra"
+        done
+	init_remote_once_token=once
+    fi
     ( [ -n "$http_proxy" ] && git config http.proxy "$http_proxy" ) || true
 }
 
@@ -140,7 +147,7 @@ checkout_hash(){
         hash=$(hash_from_ref "$ref")
     fi
 
-    git fetch -t ${builder:+--progress} origin || return 1
+    git fetch -t ${builder:+--progress} --all || return 1
     git checkout -b "$branchName" "$hash" || return 1
 }
 
@@ -163,7 +170,7 @@ checkout_ref(){
 
     if test -n "$ref"; then
         # --depth option is ignored on http repository.
-        git fetch ${builder:+--progress} --depth 1 origin +"$ref" || return 1
+        git fetch ${builder:+--progress} --depth 1 --all +"$ref" || return 1
         git checkout -b "$branchName" FETCH_HEAD || return 1
     else
         return 1

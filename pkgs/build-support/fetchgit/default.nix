@@ -16,6 +16,7 @@ in
 , fetchSubmodules ? true, deepClone ? false
 , branchName ? null
 , name ? urlToName url rev
+, extraRemotes ? []
 , # Shell code executed after the file has been fetched
   # successfully. This can do things like check or transform the file.
   postFetch ? ""
@@ -58,7 +59,7 @@ stdenv.mkDerivation {
   outputHashMode = "recursive";
   outputHash = sha256;
 
-  inherit url rev leaveDotGit fetchSubmodules deepClone branchName postFetch;
+  inherit url rev leaveDotGit fetchSubmodules deepClone branchName postFetch extraRemotes;
 
   GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
