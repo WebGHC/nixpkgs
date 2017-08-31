@@ -60,6 +60,8 @@ in
 , coreSetup ? false # Use only core packages to build Setup.hs.
 , useCpphs ? false
 , hardeningDisable ? stdenv.lib.optional (ghc.isHaLVM or false) "all"
+, enableExecutableStripping ? true
+, enableLibraryStripping ? true
 } @ args:
 
 assert editedCabalFile != null -> revision != null;
@@ -108,6 +110,7 @@ let
     "--with-gcc=${crossPrefix}cc"
     "--with-ld=${crossPrefix}ld"
     "--with-hsc2hs=${nativeGhc}/bin/hsc2hs"
+  ] ++ optionals (enableLibraryStripping || enableExecutableStripping) [
     "--with-strip=${binutils}/bin/${crossPrefix}strip"
   ] ++ (if isHaLVM then [] else ["--hsc2hs-options=--cross-compile"]);
 
@@ -132,6 +135,10 @@ let
     (optionalString (isGhcjs || versionOlder "7" ghc.version) (enableFeature doCheck "tests"))
   ] ++ optionals (enableDeadCodeElimination && (stdenv.lib.versionOlder "8.0.1" ghc.version)) [
      "--ghc-option=-split-sections"
+  ] ++ optionals (!enableExecutableStripping) [
+    "--disable-executable-stripping"
+  ] ++ optionals (!enableLibraryStripping) [
+    "--disable-library-stripping"
   ] ++ optionals isGhcjs [
     "--ghcjs"
   ] ++ optionals isCross ([
