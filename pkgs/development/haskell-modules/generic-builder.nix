@@ -6,7 +6,7 @@
 
 let
   isCross = buildPlatform != hostPlatform;
-  inherit (buildPackages) fetchurl pkgconfig binutils coreutils gnugrep gnused glibcLocales;
+  inherit (buildPackages) fetchurl pkgconfig binutils coreutils gnugrep gnused glibcLocales llvmPackages;
 in
 
 { pname
@@ -159,7 +159,7 @@ let
   allPkgconfigDepends = pkgconfigDepends ++ libraryPkgconfigDepends ++ executablePkgconfigDepends ++
                         optionals doCheck testPkgconfigDepends ++ optionals withBenchmarkDepends benchmarkPkgconfigDepends;
 
-  nativeBuildInputs = setupHaskellDepends ++ buildTools ++ libraryToolDepends ++ executableToolDepends;
+  nativeBuildInputs = setupHaskellDepends ++ buildTools ++ libraryToolDepends ++ executableToolDepends ++ optional isCross llvmPackages.llvm;
   propagatedBuildInputs = buildDepends ++ libraryHaskellDepends ++ executableHaskellDepends;
   otherBuildInputs = extraLibraries ++ librarySystemDepends ++ executableSystemDepends ++
                      optionals (allPkgconfigDepends != []) ([pkgconfig] ++ allPkgconfigDepends) ++
