@@ -31,7 +31,7 @@ let
   inherit (bootPkgs) ghc;
 
   version = "8.3.20170720";
-  rev = "df42a68c5d7ec00aa5e7c9366d484bd5424952cb";
+  rev = "4486ab24e12ff8b0cdbb8656c89e94dd9b9940af";
 
   targetStdenv = __targetPackages.stdenv;
   prefix = stdenv.lib.optionalString
@@ -49,7 +49,7 @@ in stdenv.mkDerivation (rec {
     url = "git://git.haskell.org/ghc.git";
     extraRemotes = ["https://github.com/WebGHC/ghc.git"];
     inherit rev;
-    sha256 = "0rwx8hlhjhnf1al01whwawlrib0l1kaim5mni8jgjq1cmypx4w1j";
+    sha256 = "13xd7mxg34fdznmpx0f52sn682qhjl2l5h3ag3j11zddcq8wkv5r";
   };
 
   postPatch = "patchShebangs .";

@@ -76,7 +76,7 @@ in with buildTools; {
       sphinx = pkgs.python3Packages.sphinx;
     };
     ghcHEAD = callPackage ../development/compilers/ghc/head.nix rec {
-      bootPkgs = if buildPlatform != targetPlatform then packages.ghcHEAD else packages.ghc7103;
+      bootPkgs = if buildPlatform != targetPlatform then packages.ghcHEAD else packages.ghc802;
       inherit (bootPkgs) alex happy;
     };
     ghcjs = packages.ghc7103.callPackage ../development/compilers/ghcjs {
