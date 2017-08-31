@@ -211,6 +211,8 @@ stdenv.mkDerivation ({
   preConfigurePhases = ["compileBuildDriverPhase"];
   preInstallPhases = ["haddockPhase"];
 
+  ${if isCross then "dontConfigureStatic" else null} = true;
+
   inherit src;
 
   inherit nativeBuildInputs;
