@@ -67,6 +67,8 @@ in
 , hardeningDisable ? stdenv.lib.optional (ghc.isHaLVM or false) "all"
 , enableSeparateDataOutput ? false
 , enableSeparateDocOutput ? doHaddock
+, enableExecutableStripping ? true
+, enableLibraryStripping ? true
 } @ args:
 
 assert editedCabalFile != null -> revision != null;
@@ -118,6 +120,7 @@ let
     "--with-gcc=${stdenv.cc.prefix}cc"
     "--with-ld=${stdenv.cc.binutils.prefix}ld"
     "--with-hsc2hs=${nativeGhc}/bin/hsc2hs" # not cross one
+  ] ++ optionals (enableLibraryStripping || enableExecutableStripping) [
     "--with-strip=${stdenv.cc.binutils.prefix}strip"
   ] ++ (if isHaLVM then [] else ["--hsc2hs-options=--cross-compile"]);
 
@@ -144,6 +147,10 @@ let
     (optionalString (isGhcjs || versionOlder "7" ghc.version) (enableFeature doCheck "tests"))
   ] ++ optionals (enableDeadCodeElimination && (stdenv.lib.versionOlder "8.0.1" ghc.version)) [
      "--ghc-option=-split-sections"
+  ] ++ optionals (!enableExecutableStripping) [
+    "--disable-executable-stripping"
+  ] ++ optionals (!enableLibraryStripping) [
+    "--disable-library-stripping"
   ] ++ optionals isGhcjs [
     "--ghcjs"
   ] ++ optionals isCross ([
