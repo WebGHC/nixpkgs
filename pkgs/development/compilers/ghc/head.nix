@@ -186,15 +186,15 @@ in stdenv.mkDerivation (rec {
 
   # TODO: next mass rebuild / version bump just do
   # dontSetConfigureCross = buildPlatform != targetPlatform;
+} // stdenv.lib.optionalAttrs (targetPlatform != hostPlatform) {
+  # It uses the native strip on libraries too
+  dontStrip = true;
+  dontCrossStrip = true;
 # } // stdenv.lib.optionalAttrs prebuiltAndroidTarget {
 
 #   # It gets confused with ncurses
 #   dontPatchELF = true;
 #   dontCrossPatchELF = true;
-
-#   # It uses the native strip on libraries too
-#   dontStrip = true;
-#   dontCrossStrip = true;
 
 #   # Hack so we can get away with not stripping and patching.
 #   noAuditTmpdir = true;
