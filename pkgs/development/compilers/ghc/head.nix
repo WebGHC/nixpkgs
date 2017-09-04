@@ -147,6 +147,10 @@ in stdenv.mkDerivation (rec {
   ] ++ stdenv.lib.optionals (targetPlatform.config == "aarch64-apple-darwin14") [
     # fix for iOS: https://www.reddit.com/r/haskell/comments/4ttdz1/building_an_osxi386_to_iosarm64_cross_compiler/d5qvd67/
     "--disable-large-address-space"
+  ] ++ stdenv.lib.optionals (!useVendoredLibffi) [
+    "--with-system-libffi"
+    "--with-ffi-includes=${__targetPackages.libffi.dev}/include"
+    "--with-ffi-libraries=${__targetPackages.libffi.out}/lib"
   ];
 
   # required, because otherwise all symbols from HSffi.o are stripped, and
