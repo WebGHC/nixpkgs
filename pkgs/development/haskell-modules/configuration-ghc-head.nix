@@ -90,13 +90,14 @@ self: super: {
   old-time = doJailbreak super.old-time;
   old-locale = doJailbreak super.old-locale;
   primitive = doJailbreak super.primitive;
-  test-framework = self.callCabal2nix "test-framework" ("${pkgs.fetchFromGitHub {
+  test-framework = overrideCabal (self.callCabal2nix "test-framework" ("${pkgs.fetchFromGitHub {
     owner = "haskell";
     repo = "test-framework";
     rev = "126d62370ae1854ffa991df5ce251ed81e6cd1f9";
     sha256 = "1sw2glfq21b4q9ks6gx71cna29lyjqrhlprxw56w5mjx3fx9izb5";
-  }}/core") {};
+  }}/core") {}) { patches = [./patches/test-framework-semigroup.patch]; };
   atomic-primops = doJailbreak (appendPatch super.atomic-primops ./patches/atomic-primops-Cabal-1.25.patch);
   hashable = doJailbreak super.hashable;
   stm = doJailbreak super.stm;
+  ansi-wl-pprint = self.callHackage "ansi-wl-pprint" "0.6.8.1" {};
 }

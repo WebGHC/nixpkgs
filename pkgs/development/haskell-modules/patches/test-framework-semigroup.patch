@@ -1,0 +1,90 @@
+diff --git a/Test/Framework/Options.hs b/Test/Framework/Options.hs
+index 30114dd..7d16ad3 100644
+--- a/Test/Framework/Options.hs
++++ b/Test/Framework/Options.hs
+@@ -4,6 +4,9 @@ import Test.Framework.Seed
+ import Test.Framework.Utilities
+ 
+ import Data.Monoid
++#if MIN_VERSION_base(4,9,0)
++import Data.Semigroup (Semigroup(..))
++#endif
+ 
+ 
+ type TestOptions = TestOptions' Maybe
+@@ -23,6 +26,11 @@ data TestOptions' f = TestOptions {
+         -- ^ The number of microseconds to run tests for before considering them a failure
+     }
+ 
++#if MIN_VERSION_base(4,9,0)
++instance Semigroup (TestOptions' Maybe) where
++    (<>) = mappend
++#endif
++
+ instance Monoid (TestOptions' Maybe) where
+     mempty = TestOptions {
+             topt_seed = Nothing,
+diff --git a/Test/Framework/Runners/Options.hs b/Test/Framework/Runners/Options.hs
+index e6436b1..fc0f823 100644
+--- a/Test/Framework/Runners/Options.hs
++++ b/Test/Framework/Runners/Options.hs
+@@ -8,6 +8,9 @@ import Test.Framework.Utilities
+ import Test.Framework.Runners.TestPattern
+ 
+ import Data.Monoid
++#if MIN_VERSION_base(4,9,0)
++import Data.Semigroup (Semigroup(..))
++#endif
+ 
+ data ColorMode = ColorAuto | ColorNever | ColorAlways
+ 
+@@ -24,6 +27,11 @@ data RunnerOptions' f = RunnerOptions {
+         ropt_list_only  :: f Bool
+     }
+ 
++#if MIN_VERSION_base(4,9,0)
++instance Semigroup (RunnerOptions' Maybe) where
++    (<>) = mappend
++#endif
++
+ instance Monoid (RunnerOptions' Maybe) where
+     mempty = RunnerOptions {
+             ropt_threads = Nothing,
+diff --git a/Test/Framework/Runners/Statistics.hs b/Test/Framework/Runners/Statistics.hs
+index a85d702..92aed7c 100644
+--- a/Test/Framework/Runners/Statistics.hs
++++ b/Test/Framework/Runners/Statistics.hs
+@@ -13,6 +13,9 @@ import qualified Data.Map as Map
+ #if !MIN_VERSION_base(4,8,0)
+ import Data.Monoid
+ #endif
++#if MIN_VERSION_base(4,9,0)
++import Data.Semigroup (Semigroup(..))
++#endif
+ 
+ 
+ -- | Records a count of the various kinds of test that have been run
+@@ -32,6 +35,11 @@ adjustTestCount test_type amount = TestCount . Map.insertWith (+) test_type amou
+ testCountTotal :: TestCount -> Int
+ testCountTotal = sum . Map.elems . unTestCount
+ 
++#if MIN_VERSION_base(4,9,0)
++instance Semigroup TestCount where
++    (<>) = mappend
++#endif
++
+ instance Monoid TestCount where
+     mempty = TestCount $ Map.empty
+     mappend (TestCount tcm1) (TestCount tcm2) = TestCount $ Map.unionWith (+) tcm1 tcm2
+@@ -50,6 +58,11 @@ data TestStatistics = TestStatistics {
+         ts_failed_tests :: TestCount
+     }
+ 
++#if MIN_VERSION_base(4,9,0)
++instance Semigroup TestStatistics where
++    (<>) = mappend
++#endif
++
+ instance Monoid TestStatistics where
+     mempty = TestStatistics mempty mempty mempty mempty
+     mappend (TestStatistics tot1 run1 pas1 fai1) (TestStatistics tot2 run2 pas2 fai2) = TestStatistics (tot1 `mappend` tot2) (run1 `mappend` run2) (pas1 `mappend` pas2) (fai1 `mappend` fai2)
