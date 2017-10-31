@@ -29,12 +29,12 @@ cmakeConfigurePhase() {
         cmakeFlags="-DCMAKE_INSTALL_PREFIX=$prefix $cmakeFlags"
     fi
 
-    if [ -n "$crossConfig" ]; then
-        # By now it supports linux builds only. We should set the proper
-        # CMAKE_SYSTEM_NAME otherwise.
-        # http://www.cmake.org/Wiki/CMake_Cross_Compiling
-        cmakeFlags="-DCMAKE_CXX_COMPILER=$crossConfig-g++ -DCMAKE_C_COMPILER=$crossConfig-gcc $cmakeFlags"
-    fi
+    # if [ -n "$crossConfig" ]; then
+    #     # By now it supports linux builds only. We should set the proper
+    #     # CMAKE_SYSTEM_NAME otherwise.
+    #     # http://www.cmake.org/Wiki/CMake_Cross_Compiling
+    #     cmakeFlags="-DCMAKE_CXX_COMPILER=$crossConfig-g++ -DCMAKE_C_COMPILER=$crossConfig-gcc $cmakeFlags"
+    # fi
 
     # This installs shared libraries with a fully-specified install
     # name. By default, cmake installs shared libraries with just the
