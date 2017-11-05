@@ -205,6 +205,7 @@ stdenv.mkDerivation {
         *) echo "Multiple dynamic linkers found for platform '${targetPlatform.config}'." >&2;;
       esac
 
+    '' + optionalString (!(targetPlatform.disableDynamicLinker or false)) (''
       if [ -n "$dynamicLinker" ]; then
         echo $dynamicLinker > $out/nix-support/dynamic-linker
 
@@ -218,6 +219,7 @@ stdenv.mkDerivation {
         local ldflagsBefore=(-dynamic-linker "$dynamicLinker")
     '') + ''
       fi
+    '') + ''
 
       # The dynamic linker is passed in `ldflagsBefore' to allow
       # explicit overrides of the dynamic linker by callers to ld
