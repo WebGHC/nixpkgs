@@ -30,6 +30,8 @@
 , version ? "8.3.20170808"
 
 , quick-cross ? false
+
+, with-terminfo ? true
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -54,6 +56,8 @@ let
     HADDOCK_DOCS = NO
     BUILD_SPHINX_HTML = NO
     BUILD_SPHINX_PDF = NO
+  '' + stdenv.lib.optionalString (!with-terminfo) ''
+    WITH_TERMINFO = NO
   '' + stdenv.lib.optionalString enableRelocatedStaticLibs ''
     GhcLibHcOpts += -fPIC
     GhcRtsHcOpts += -fPIC
@@ -64,7 +68,7 @@ let
   prebuiltAndroidTarget = targetPlatform.useAndroidPrebuilt or false;
 
   # Splicer will pull out correct variations
-  libDeps = platform: [ ncurses ]
+  libDeps = platform: stdenv.lib.optional with-terminfo ncurses
     ++ stdenv.lib.optional (!enableIntegerSimple) gmp
     ++ stdenv.lib.optional (platform.libc != "glibc") libiconv;
 
@@ -133,6 +137,7 @@ stdenv.mkDerivation rec {
     "READELF=${targetCC.binutils.binutils}/bin/${targetCC.prefix}readelf"
     "STRIP=${targetCC.binutils.binutils}/bin/${targetCC.prefix}strip"
     "--datadir=$doc/share/doc/ghc"
+  ] ++ stdenv.lib.optionals (with-terminfo) [
     "--with-curses-includes=${ncurses.dev}/include" "--with-curses-libraries=${ncurses.out}/lib"
   ] ++ stdenv.lib.optional (targetPlatform == hostPlatform && ! enableIntegerSimple) [
     "--with-gmp-includes=${gmp.dev}/include" "--with-gmp-libraries=${gmp.out}/lib"
