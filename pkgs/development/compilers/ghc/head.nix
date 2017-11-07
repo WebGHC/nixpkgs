@@ -32,6 +32,10 @@
 , quick-cross ? false
 
 , with-terminfo ? true
+
+, prebuiltAndroidTarget ? targetPlatform.useAndroidPrebuilt or false
+
+, dontStrip ? prebuiltAndroidTarget
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -58,14 +62,14 @@ let
     BUILD_SPHINX_PDF = NO
   '' + stdenv.lib.optionalString (!with-terminfo) ''
     WITH_TERMINFO = NO
+  '' + stdenv.lib.optionalString dontStrip ''
+    STRIP_CMD = :
   '' + stdenv.lib.optionalString enableRelocatedStaticLibs ''
     GhcLibHcOpts += -fPIC
     GhcRtsHcOpts += -fPIC
   '' + stdenv.lib.optionalString prebuiltAndroidTarget ''
     EXTRA_CC_OPTS += -std=gnu99
   '';
-
-  prebuiltAndroidTarget = targetPlatform.useAndroidPrebuilt or false;
 
   # Splicer will pull out correct variations
   libDeps = platform: stdenv.lib.optional with-terminfo ncurses
@@ -99,7 +103,7 @@ stdenv.mkDerivation rec {
   dontPatchELF = prebuiltAndroidTarget;
 
   # It uses the native strip on libraries too
-  dontStrip = prebuiltAndroidTarget;
+  inherit dontStrip;
 
   # Hack so we can get away with not stripping and patching.
   noAuditTmpdir = prebuiltAndroidTarget;
@@ -135,7 +139,9 @@ stdenv.mkDerivation rec {
     "NM=${targetCC.binutils.binutils}/bin/${targetCC.prefix}nm"
     "RANLIB=${targetCC.binutils.binutils}/bin/${targetCC.prefix}ranlib"
     "READELF=${targetCC.binutils.binutils}/bin/${targetCC.prefix}readelf"
+  ] ++ stdenv.lib.optional (!dontStrip)
     "STRIP=${targetCC.binutils.binutils}/bin/${targetCC.prefix}strip"
+  ++ [
     "--datadir=$doc/share/doc/ghc"
   ] ++ stdenv.lib.optionals (with-terminfo) [
     "--with-curses-includes=${ncurses.dev}/include" "--with-curses-libraries=${ncurses.out}/lib"
