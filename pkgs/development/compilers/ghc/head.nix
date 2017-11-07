@@ -28,6 +28,8 @@
       && (targetPlatform.isAarch64 || targetPlatform.isArm))
 
 , version ? "8.3.20170808"
+
+, quick-cross ? false
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -47,7 +49,7 @@ let
   '' + stdenv.lib.optionalString enableIntegerSimple ''
     INTEGER_LIBRARY = integer-simple
   '' + stdenv.lib.optionalString (targetPlatform != hostPlatform) ''
-    BuildFlavour = perf-cross
+    BuildFlavour = ${if quick-cross then "quick" else "perf"}-cross
     Stage1Only = YES
     HADDOCK_DOCS = NO
     BUILD_SPHINX_HTML = NO
