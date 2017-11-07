@@ -92,8 +92,19 @@ self: super: {
   # A bunch of jailbreaks due to 'base' bump
   old-time = doJailbreak super.old-time;
   old-locale = doJailbreak super.old-locale;
-  primitive = doJailbreak super.primitive;
-  test-framework = doJailbreak super.test-framework;
+  primitive = self.callCabal2nix "primitive" (pkgs.fetchFromGitHub {
+    owner = "haskell";
+    repo = "primitive";
+    rev = "db192ee76f8b49c0f6d155d1062b2cb5e956eb3e";
+    sha256 = "14cb4m2705wh745i6x53wvvv7yydnlywm91rc2vm1fiacw6hbjjp";
+  }) {};
+  ansi-wl-pprint = self.callHackage "ansi-wl-pprint" "0.6.8.1" {};
+  test-framework = dontCheck (self.callCabal2nix "test-framework" ("${pkgs.fetchFromGitHub {
+    owner = "haskell";
+    repo = "test-framework";
+    rev = "1198e3269b67348ecc7739989b9a41ed1db7a6a2";
+    sha256 = "0rkjnpxc4lrp8fpjq6c7np7yqb2jdw7dxqi9am92vqil59xf5ny1";
+  }}/core") {});
   atomic-primops = doJailbreak (appendPatch super.atomic-primops ./patches/atomic-primops-Cabal-1.25.patch);
   hashable = doJailbreak super.hashable;
   stm = doJailbreak super.stm;

@@ -43,7 +43,7 @@ assert !enableIntegerSimple -> gmp != null;
 let
   inherit (bootPkgs) ghc;
 
-  rev = "14457cf6a50f708eecece8f286f08687791d51f7";
+  rev = "8e318553ca79572daf171b25d512b4ef68841be4";
 
   # TODO(@Ericson2314) Make unconditional
   prefix = stdenv.lib.optionalString
@@ -90,7 +90,8 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "git://git.haskell.org/ghc.git";
     inherit rev;
-    sha256 = "08vj9ca7rq7rv8pjfl14fg2lg9d6zisrwlq6bi5vzr006816dy8y";
+    extraRemotes = ["https://github.com/WebGHC/ghc.git"];
+    sha256 = "1j2qz6mrhgsi2p7j7kxzgcw2p912nhcn4fpx2h1ira8ijphdiwbq";
   };
 
   enableParallelBuilding = true;
@@ -193,7 +194,7 @@ stdenv.mkDerivation rec {
     for i in "$out/bin/"*; do
       test ! -h $i || continue
       egrep --quiet '^#!' <(head -n 1 $i) || continue
-      sed -i -e '2i export PATH="$PATH:${stdenv.lib.makeBinPath [ binutils coreutils ]}"' $i
+      sed -i -e '2i export PATH="$PATH:${stdenv.lib.makeBinPath [ targetCC.binutils coreutils ]}"' $i
     done
   '';
 
