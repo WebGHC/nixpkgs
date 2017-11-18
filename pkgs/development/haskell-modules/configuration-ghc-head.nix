@@ -75,8 +75,9 @@ self: super: {
   # Test suite fails with time >= 1.5
   http-date = dontCheck super.http-date;
 
-  # Version 1.19.5 fails its test suite.
-  happy = dontCheck super.happy;
+  happy = overrideCabal (self.callHackage "happy" "1.19.8" {}) (drv: {
+    patches = [./patches/happy.patch];
+  });
 
   # Workaround for a workaround, see comment for "ghcjs" flag.
   jsaddle = let jsaddle' = disableCabalFlag super.jsaddle "ghcjs";
@@ -105,6 +106,12 @@ self: super: {
     rev = "1198e3269b67348ecc7739989b9a41ed1db7a6a2";
     sha256 = "0rkjnpxc4lrp8fpjq6c7np7yqb2jdw7dxqi9am92vqil59xf5ny1";
   }}/core") {});
+  text = self.callCabal2nix "text" (pkgs.fetchFromGitHub {
+    owner = "haskell";
+    repo = "text";
+    rev = "ccbfabedea1cf5b38ff19f37549feaf01225e537";
+    sha256 = "00clz7vrsa1y4w6fnz1asl32cv48mi8jkvyba8b8yva5n6jnriw6";
+  }) {};
   atomic-primops = doJailbreak (appendPatch super.atomic-primops ./patches/atomic-primops-Cabal-1.25.patch);
   hashable = doJailbreak super.hashable;
   stm = doJailbreak super.stm;

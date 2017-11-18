@@ -43,7 +43,7 @@ assert !enableIntegerSimple -> gmp != null;
 let
   inherit (bootPkgs) ghc;
 
-  rev = "8e318553ca79572daf171b25d512b4ef68841be4";
+  rev = "ab3258d9d17f9d741fbbc3a59d9da6cccd39dfc8";
 
   # TODO(@Ericson2314) Make unconditional
   prefix = stdenv.lib.optionalString
@@ -91,7 +91,7 @@ stdenv.mkDerivation rec {
     url = "git://git.haskell.org/ghc.git";
     inherit rev;
     extraRemotes = ["https://github.com/WebGHC/ghc.git"];
-    sha256 = "1j2qz6mrhgsi2p7j7kxzgcw2p912nhcn4fpx2h1ira8ijphdiwbq";
+    sha256 = "15r0h1jyc45ksvdcpsxjgi3xwj7lils4rxwla517shmww8y6krks";
   };
 
   enableParallelBuilding = true;
