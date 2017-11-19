@@ -36,6 +36,7 @@
 , prebuiltAndroidTarget ? targetPlatform.useAndroidPrebuilt or false
 
 , dontStrip ? prebuiltAndroidTarget
+, dontUseLibFFIForAdjustors ? false
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -69,6 +70,8 @@ let
     GhcRtsHcOpts += -fPIC
   '' + stdenv.lib.optionalString prebuiltAndroidTarget ''
     EXTRA_CC_OPTS += -std=gnu99
+  '' + stdenv.lib.optionalString dontUseLibFFIForAdjustors ''
+    UseLibFFIForAdjustors = NO
   '';
 
   # Splicer will pull out correct variations
