@@ -44,7 +44,7 @@ assert !enableIntegerSimple -> gmp != null;
 let
   inherit (bootPkgs) ghc;
 
-  rev = "ab3258d9d17f9d741fbbc3a59d9da6cccd39dfc8";
+  rev = "e594e07ebbbb98e353e10c79143df2c1ac249706";
 
   # TODO(@Ericson2314) Make unconditional
   prefix = stdenv.lib.optionalString
@@ -91,10 +91,17 @@ stdenv.mkDerivation rec {
   name = "${prefix}ghc-${version}";
 
   src = fetchgit {
-    url = "git://git.haskell.org/ghc.git";
+    url = "https://github.com/WebGHC/ghc.git";
     inherit rev;
-    extraRemotes = ["https://github.com/WebGHC/ghc.git"];
-    sha256 = "15r0h1jyc45ksvdcpsxjgi3xwj7lils4rxwla517shmww8y6krks";
+    sha256 = "1qjcldvaz22d6w4v2asinly1fk6zb1z72j8yg7fvz1638xywl2qs";
+    preFetch = ''
+      export HOME=$(pwd)
+      git config --global url."git://github.com/WebGHC/packages-".insteadOf     git://github.com/WebGHC/packages/
+      git config --global url."http://github.com/WebGHC/packages-".insteadOf    http://github.com/WebGHC/packages/
+      git config --global url."https://github.com/WebGHC/packages-".insteadOf   https://github.com/WebGHC/packages/
+      git config --global url."ssh://git@github.com/WebGHC/packages-".insteadOf ssh://git@github.com/WebGHC/packages/
+      git config --global url."git@github.com:WebGHC/packages-".insteadOf       git@github.com:WebGHC/packages/
+    '';
   };
 
   enableParallelBuilding = true;
