@@ -20,6 +20,7 @@ in
   # successfully. This can do things like check or transform the file.
   postFetch ? ""
 , preferLocalBuild ? true
+, preFetch ? ""
 }:
 
 /* NOTE:
@@ -59,7 +60,7 @@ stdenvNoCC.mkDerivation {
   outputHashMode = "recursive";
   outputHash = sha256;
 
-  inherit url rev leaveDotGit fetchSubmodules deepClone branchName postFetch;
+  inherit url rev leaveDotGit fetchSubmodules deepClone branchName postFetch preFetch;
 
   GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
