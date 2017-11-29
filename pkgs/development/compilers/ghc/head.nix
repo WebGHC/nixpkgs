@@ -27,7 +27,7 @@
       # On iOS, dynamic linking is not supported
       && (targetPlatform.isAarch64 || targetPlatform.isArm))
 
-, version ? "8.3.20170808"
+, version ? "8.3.20171129"
 
 , quick-cross ? false
 
@@ -44,7 +44,7 @@ assert !enableIntegerSimple -> gmp != null;
 let
   inherit (bootPkgs) ghc;
 
-  rev = "e594e07ebbbb98e353e10c79143df2c1ac249706";
+  rev = "edb8e3f5c9b356401875a051edcb02b8e868d274";
 
   # TODO(@Ericson2314) Make unconditional
   prefix = stdenv.lib.optionalString
@@ -93,7 +93,7 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://github.com/WebGHC/ghc.git";
     inherit rev;
-    sha256 = "1qjcldvaz22d6w4v2asinly1fk6zb1z72j8yg7fvz1638xywl2qs";
+    sha256 = "1pkpfxszyf3lhbmn8aqxndqn1gdg9i1wwlvz5xq1x1f9rv7828bx";
     preFetch = ''
       export HOME=$(pwd)
       git config --global url."git://github.com/WebGHC/packages-".insteadOf     git://github.com/WebGHC/packages/
