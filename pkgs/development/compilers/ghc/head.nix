@@ -37,6 +37,8 @@
 
 , dontStrip ? prebuiltAndroidTarget
 , dontUseLibFFIForAdjustors ? false
+, disableFFI ? false
+, ghcSingleThreaded ? false
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -72,6 +74,10 @@ let
     EXTRA_CC_OPTS += -std=gnu99
   '' + stdenv.lib.optionalString dontUseLibFFIForAdjustors ''
     UseLibFFIForAdjustors = NO
+  '' + stdenv.lib.optionalString disableFFI ''
+    DisableFFI = YES
+  '' + stdenv.lib.optionalString ghcSingleThreaded ''
+    GhcThreaded = NO
   '';
 
   # Splicer will pull out correct variations
