@@ -38,7 +38,6 @@
 , dontStrip ? prebuiltAndroidTarget
 , dontUseLibFFIForAdjustors ? false
 , disableFFI ? false
-, ghcSingleThreaded ? false
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -76,8 +75,6 @@ let
     UseLibFFIForAdjustors = NO
   '' + stdenv.lib.optionalString disableFFI ''
     DisableFFI = YES
-  '' + stdenv.lib.optionalString ghcSingleThreaded ''
-    GhcThreaded = NO
   '';
 
   # Splicer will pull out correct variations
