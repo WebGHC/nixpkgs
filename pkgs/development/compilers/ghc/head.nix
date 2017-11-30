@@ -45,7 +45,7 @@ assert !enableIntegerSimple -> gmp != null;
 let
   inherit (bootPkgs) ghc;
 
-  rev = "e577af743f3d68ed4b482af93b6b6444bb3041af";
+  rev = "4fef1495cb81dee368589b812a04af1a013aeb39";
 
   # TODO(@Ericson2314) Make unconditional
   prefix = stdenv.lib.optionalString
@@ -96,7 +96,7 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://github.com/WebGHC/ghc.git";
     inherit rev;
-    sha256 = "0sb212i3w23mlyyh3yfj5k6viw2i2hpmvims1ysjbw4zg0sywgrb";
+    sha256 = "1l3gzlnvnyncnd0j7cvy1f7wi6311zgrimqi77gnifdcjma6g271";
     preFetch = ''
       export HOME=$(pwd)
       git config --global url."git://github.com/WebGHC/packages-".insteadOf     git://github.com/WebGHC/packages/
