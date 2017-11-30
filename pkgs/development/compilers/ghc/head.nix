@@ -96,7 +96,7 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://github.com/WebGHC/ghc.git";
     inherit rev;
-    sha256 = "1l3gzlnvnyncnd0j7cvy1f7wi6311zgrimqi77gnifdcjma6g271";
+    sha256 = "1akjjpmdnvyr51ay4fkn7j23bxr0jbimsl09yw9jprrf3bii8cx2";
     preFetch = ''
       export HOME=$(pwd)
       git config --global url."git://github.com/WebGHC/packages-".insteadOf     git://github.com/WebGHC/packages/
