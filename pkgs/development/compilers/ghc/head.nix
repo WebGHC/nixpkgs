@@ -27,7 +27,7 @@
       # On iOS, dynamic linking is not supported
       && (targetPlatform.isAarch64 || targetPlatform.isArm))
 
-, version ? "8.3.20171201"
+, version ? "8.3.20170808"
 
 , quick-cross ? false
 
@@ -45,7 +45,7 @@ assert !enableIntegerSimple -> gmp != null;
 let
   inherit (bootPkgs) ghc;
 
-  rev = "a9117c5ece52a344234b13ddc04b2afd896d9d09";
+  rev = "14457cf6a50f708eecece8f286f08687791d51f7";
 
   # TODO(@Ericson2314) Make unconditional
   prefix = stdenv.lib.optionalString
@@ -94,17 +94,9 @@ stdenv.mkDerivation rec {
   name = "${prefix}ghc-${version}";
 
   src = fetchgit {
-    url = "https://github.com/WebGHC/ghc.git";
+    url = "git://git.haskell.org/ghc.git";
     inherit rev;
-    sha256 = "1bldrcbxz7z0dhkwiygr730rawpbc7wgd863ng6b63nppd554sdd";
-    preFetch = ''
-      export HOME=$(pwd)
-      git config --global url."git://github.com/WebGHC/packages-".insteadOf     git://github.com/WebGHC/packages/
-      git config --global url."http://github.com/WebGHC/packages-".insteadOf    http://github.com/WebGHC/packages/
-      git config --global url."https://github.com/WebGHC/packages-".insteadOf   https://github.com/WebGHC/packages/
-      git config --global url."ssh://git@github.com/WebGHC/packages-".insteadOf ssh://git@github.com/WebGHC/packages/
-      git config --global url."git@github.com:WebGHC/packages-".insteadOf       git@github.com:WebGHC/packages/
-    '';
+    sha256 = "08vj9ca7rq7rv8pjfl14fg2lg9d6zisrwlq6bi5vzr006816dy8y";
   };
 
   enableParallelBuilding = true;
