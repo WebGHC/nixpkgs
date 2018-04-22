@@ -75,7 +75,7 @@ in rec {
       sphinx = pkgs.python27Packages.sphinx;
     };
     ghc821 = callPackage ../development/compilers/ghc/8.2.1.nix rec {
-      bootPkgs = if buildPlatform != targetPlatform then packages.ghc821 else packages.ghc802;
+      bootPkgs = packages.ghc802;
       inherit (bootPkgs) hscolour alex happy;
       sphinx = pkgs.python3Packages.sphinx;
 
@@ -84,7 +84,7 @@ in rec {
       llvmPackages = pkgs.llvmPackages_39;
     };
     ghcHEAD = callPackage ../development/compilers/ghc/head.nix rec {
-      bootPkgs = if buildPlatform != targetPlatform then packages.ghcHEAD else packages.ghc802;
+      bootPkgs = packages.ghc802;
       inherit (bootPkgs) alex happy;
     };
     ghcjs = packages.ghc7103.callPackage ../development/compilers/ghcjs {
