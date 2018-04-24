@@ -25,6 +25,12 @@
   enableShared ? true
 
 , version ? "8.5.20180118"
+
+, withTerminfo ? true
+
+, dontStrip ? false
+, dontUseLibFFIForAdjustors ? false
+, disableFFI ? false
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -47,13 +53,22 @@ let
     HADDOCK_DOCS = NO
     BUILD_SPHINX_HTML = NO
     BUILD_SPHINX_PDF = NO
+  '' + stdenv.lib.optionalString (!withTerminfo) ''
+    WITH_TERMINFO = NO
+  '' + stdenv.lib.optionalString dontStrip ''
+    STRIP_CMD = :
   '' + stdenv.lib.optionalString enableRelocatedStaticLibs ''
     GhcLibHcOpts += -fPIC
     GhcRtsHcOpts += -fPIC
+  '' + stdenv.lib.optionalString dontUseLibFFIForAdjustors ''
+    UseLibFFIForAdjustors = NO
+  '' + stdenv.lib.optionalString disableFFI ''
+    DisableFFI = YES
   '';
 
   # Splicer will pull out correct variations
-  libDeps = platform: [ ncurses ]
+  # Native terminfo is needed for stage 0 regardless of WITH_TERMINFO
+  libDeps = platform: stdenv.lib.optional (withTerminfo || platform == hostPlatform) ncurses
     ++ stdenv.lib.optional (!enableIntegerSimple) gmp
     ++ stdenv.lib.optional (platform.libc != "glibc") libiconv;
 
@@ -82,6 +97,9 @@ stdenv.mkDerivation rec {
   outputs = [ "out" "doc" ];
 
   postPatch = "patchShebangs .";
+
+  # It uses the native strip on libraries too
+  inherit dontStrip;
 
   # GHC is a bit confused on its cross terminology.
   preConfigure = ''
