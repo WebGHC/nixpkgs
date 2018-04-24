@@ -36,6 +36,10 @@
 , # Whether to disable the large address space allocator
   # necessary fix for iOS: https://www.reddit.com/r/haskell/comments/4ttdz1/building_an_osxi386_to_iosarm64_cross_compiler/d5qvd67/
   disableLargeAddressSpace ? stdenv.targetPlatform.isDarwin && stdenv.targetPlatform.isAarch64
+
+, dontStrip ? false
+, dontUseLibFFIForAdjustors ? false
+, disableFFI ? false
 }:
 
 assert !enableIntegerSimple -> gmp != null;
@@ -63,15 +67,24 @@ let
     HADDOCK_DOCS = NO
     BUILD_SPHINX_HTML = NO
     BUILD_SPHINX_PDF = NO
+  '' + stdenv.lib.optionalString (!enableTerminfo) ''
+    WITH_TERMINFO = NO
+  '' + stdenv.lib.optionalString dontStrip ''
+    STRIP_CMD = :
   '' + stdenv.lib.optionalString enableRelocatedStaticLibs ''
     GhcLibHcOpts += -fPIC
     GhcRtsHcOpts += -fPIC
   '' + stdenv.lib.optionalString targetPlatform.useAndroidPrebuilt ''
     EXTRA_CC_OPTS += -std=gnu99
+  '' + stdenv.lib.optionalString dontUseLibFFIForAdjustors ''
+    UseLibFFIForAdjustors = NO
+  '' + stdenv.lib.optionalString disableFFI ''
+    DisableFFI = YES
   '';
 
   # Splicer will pull out correct variations
-  libDeps = platform: stdenv.lib.optional enableTerminfo [ ncurses ]
+  # Native terminfo is needed for stage 0 regardless of WITH_TERMINFO
+  libDeps = platform: stdenv.lib.optional (enableTerminfo || (!platform.isWindows && platform == hostPlatform)) [ ncurses ]
     ++ stdenv.lib.optional (!enableIntegerSimple) gmp
     ++ stdenv.lib.optional (platform.libc != "glibc" && !targetPlatform.isWindows) libiconv;
 
@@ -108,6 +121,9 @@ stdenv.mkDerivation (rec {
   ];
 
   postPatch = "patchShebangs .";
+
+  # It uses the native strip on libraries too
+  inherit dontStrip;
 
   # GHC is a bit confused on its cross terminology.
   preConfigure = ''
