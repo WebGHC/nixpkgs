@@ -162,6 +162,7 @@ rec {
     openbsd = { execFormat = elf;     families = { inherit bsd; }; };
     solaris = { execFormat = elf;     families = { }; };
     windows = { execFormat = pe;      families = { }; };
+    unknown = { execFormat = unknown; families = { }; };
   } // { # aliases
     # 'darwin' is the kernel for all of them. We choose macOS by default.
     darwin = kernels.macos;
@@ -195,6 +196,7 @@ rec {
     musleabi = {};
     musleabihf = {};
     musl = {};
+    wasm = {};
 
     unknown = {};
   };

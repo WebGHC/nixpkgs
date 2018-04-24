@@ -26,6 +26,7 @@ in rec {
   openbsd = [ patterns.isOpenBSD ];
   unix    = patterns.isUnix; # Actually a list
   windows = [ patterns.isWindows ];
+  wasm    = [ patterns.isWasm ];
 
   inherit (lib.systems.doubles) mesaPlatforms;
 }
