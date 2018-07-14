@@ -7,11 +7,10 @@ self: super: {
   # Use the latest LLVM.
   inherit (pkgs) llvmPackages;
 
-  # Disable GHC 7.11.x core libraries.
+  # Disable GHC 8.5.x core libraries.
   array = null;
   base = null;
   binary = null;
-  bin-package-db = null;
   bytestring = null;
   Cabal = null;
   containers = null;
@@ -21,21 +20,29 @@ self: super: {
   ghc-boot = null;
   ghc-boot-th = null;
   ghc-compact = null;
+  ghc-heap = null;
   ghc-prim = null;
   ghci = null;
   haskeline = null;
-  hoopl = null;
   hpc = null;
   integer-gmp = null;
+  libiserv = null;
+  mtl = null;
+  parsec = null;
   pretty = null;
   process = null;
   rts = null;
+  stm = null;
   template-haskell = null;
   terminfo = null;
+  text = null;
   time = null;
   transformers = null;
   unix = null;
   xhtml = null;
+
+  # Use to be a core-library, but no longer is since GHC 8.4.x.
+  hoopl = self.hoopl_3_10_2_2;
 
   # jailbreak-cabal can use the native Cabal library.
   jailbreak-cabal = pkgs.haskell.packages.ghc802.jailbreak-cabal;
@@ -92,5 +99,4 @@ self: super: {
   test-framework = doJailbreak super.test-framework;
   atomic-primops = doJailbreak (appendPatch super.atomic-primops ./patches/atomic-primops-Cabal-1.25.patch);
   hashable = doJailbreak super.hashable;
-  stm = doJailbreak super.stm;
 }
