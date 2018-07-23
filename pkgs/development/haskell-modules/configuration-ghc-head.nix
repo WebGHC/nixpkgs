@@ -99,4 +99,10 @@ self: super: {
   test-framework = doJailbreak super.test-framework;
   atomic-primops = doJailbreak (appendPatch super.atomic-primops ./patches/atomic-primops-Cabal-1.25.patch);
   hashable = doJailbreak super.hashable;
+  integer-logarithms = doJailbreak super.integer-logarithms;
+  vector = doJailbreak super.vector;
+  vector-binary-instances = doJailbreak super.vector-binary-instances;
+  microstache = doJailbreak super.microstache;
+  parallel = doJailbreak super.parallel;
+  exceptions = doJailbreak super.exceptions;
 }
