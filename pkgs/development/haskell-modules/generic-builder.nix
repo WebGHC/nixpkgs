@@ -40,7 +40,7 @@ in
 # They must be propagated to the environment of any executable linking with the library
 , libraryFrameworkDepends ? [], executableFrameworkDepends ? []
 , homepage ? "https://hackage.haskell.org/package/${pname}"
-, platforms ? with stdenv.lib.platforms; unix ++ windows # GHC can cross-compile
+, platforms ? with stdenv.lib.platforms; unix ++ windows ++ wasm # GHC can cross-compile
 , hydraPlatforms ? null
 , hyperlinkSource ? true
 , isExecutable ? false, isLibrary ? !isExecutable
