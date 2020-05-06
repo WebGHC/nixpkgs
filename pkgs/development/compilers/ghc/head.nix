@@ -236,8 +236,9 @@ stdenv.mkDerivation (rec {
     inherit (ghc.meta) license platforms;
   };
 
-} // stdenv.lib.optionalAttrs targetPlatform.useAndroidPrebuilt {
-  dontStrip = true;
+  dontStrip = (targetPlatform.useAndroidPrebuilt || targetPlatform.isWasm);
+
+} // stdenv.lib.optionalAttrs targetPlatform.useAndroidPrebuilt{
   dontPatchELF = true;
   noAuditTmpdir = true;
 })
